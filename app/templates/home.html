@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <h1>{{ settings.site_title }}</h1>
+    <p>{{ settings.site_subtitle }}</p>
+  </div>
+</section>
+
+<section id="recursos" class="section container">
+  <h2>Recursos</h2>
+  <div class="cards-grid">
+    <article class="card">
+      <h3>Videos</h3>
+      {% if videos %}
+        <ul class="item-list">
+          {% for video in videos %}
+            <li>
+              <strong>{{ video.title }}</strong>
+              <p>{{ video.description }}</p>
+              <a href="{{ video.url }}" target="_blank">Ver video</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No hay videos aún.</p>
+      {% endif %}
+    </article>
+
+    <article class="card wide">
+      <h3>Libros para descargar</h3>
+      {% for category in book_categories %}
+        <h4>{{ category }}</h4>
+        {% set items = books_by_category[category] %}
+        {% if items %}
+          <ul class="item-list compact">
+          {% for book in items %}
+            <li>
+              <strong>{{ book.title }}</strong> {% if book.author %}<span>- {{ book.author }}</span>{% endif %}
+              <p>{{ book.description }}</p>
+              <a href="{{ book.file_url }}" target="_blank">Descargar / Ver</a>
+            </li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">Sin libros publicados en esta categoría.</p>
+        {% endif %}
+      {% endfor %}
+    </article>
+  </div>
+</section>
+
+<section id="informacion" class="section alt">
+  <div class="container">
+    <h2>Información y calendario</h2>
+    {% if info_posts %}
+      <div class="cards-grid">
+      {% for post in info_posts %}
+        <article class="card">
+          <h3>{{ post.title }}</h3>
+          {% if post.event_date %}<small>Fecha: {{ post.event_date }}</small>{% endif %}
+          <p>{{ post.body }}</p>
+        </article>
+      {% endfor %}
+      </div>
+    {% else %}
+      <p>No hay anuncios por ahora.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section id="nosotros" class="section container">
+  <h2>Nosotros</h2>
+  <article class="card">
+    <p>{{ settings.about_text }}</p>
+  </article>
+</section>
+
+<section id="libro-anio" class="section alt">
+  <div class="container">
+    <h2>{{ settings.book_of_year_title }}</h2>
+    <article class="card">
+      <p>{{ settings.book_of_year_description }}</p>
+      {% if settings.book_of_year_url %}
+      <a class="btn" href="{{ settings.book_of_year_url }}" target="_blank">Ver libro del año</a>
+      {% endif %}
+    </article>
+
+    <h3>Cuestionarios</h3>
+    {% if questionnaires %}
+      <div class="cards-grid">
+      {% for q in questionnaires %}
+        <article class="card">
+          <h4>{{ q.title }}</h4>
+          <p>{{ q.description }}</p>
+          <a href="{{ q.form_url }}" target="_blank">Responder cuestionario</a>
+        </article>
+      {% endfor %}
+      </div>
+    {% else %}
+      <p>Aún no hay cuestionarios publicados.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
