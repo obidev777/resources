@@ -75,7 +75,7 @@
   <div class="admin-grid">
     <article class="card">
       <h2>Eliminar videos</h2>
-      {% for item in g.db.execute('SELECT id, title FROM videos ORDER BY id DESC').fetchall() %}
+      {% for item in videos %}
       <form class="inline" method="post" action="{{ url_for('admin_videos_delete', item_id=item.id) }}">
         <span>{{ item.title }}</span><button class="btn danger" type="submit">Eliminar</button>
       </form>
@@ -84,7 +84,7 @@
 
     <article class="card">
       <h2>Eliminar libros</h2>
-      {% for item in g.db.execute('SELECT id, title FROM books ORDER BY id DESC').fetchall() %}
+      {% for item in books %}
       <form class="inline" method="post" action="{{ url_for('admin_books_delete', item_id=item.id) }}">
         <span>{{ item.title }}</span><button class="btn danger" type="submit">Eliminar</button>
       </form>
@@ -93,7 +93,7 @@
 
     <article class="card">
       <h2>Eliminar información</h2>
-      {% for item in g.db.execute('SELECT id, title FROM info_posts ORDER BY id DESC').fetchall() %}
+      {% for item in info_posts %}
       <form class="inline" method="post" action="{{ url_for('admin_info_delete', item_id=item.id) }}">
         <span>{{ item.title }}</span><button class="btn danger" type="submit">Eliminar</button>
       </form>
@@ -102,7 +102,7 @@
 
     <article class="card">
       <h2>Eliminar cuestionarios</h2>
-      {% for item in g.db.execute('SELECT id, title FROM questionnaires ORDER BY id DESC').fetchall() %}
+      {% for item in questionnaires %}
       <form class="inline" method="post" action="{{ url_for('admin_questionnaire_delete', item_id=item.id) }}">
         <span>{{ item.title }}</span><button class="btn danger" type="submit">Eliminar</button>
       </form>

@@ -1,19 +1,18 @@
 from __future__ import annotations
 
+import json
 import os
-import sqlite3
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
 
-from flask import Flask, flash, g, redirect, render_template, request, session, url_for
+from flask import Flask, flash, redirect, render_template, request, session, url_for
 
 BASE_DIR = Path(__file__).resolve().parent
-DATABASE = BASE_DIR / "app" / "data" / "site.db"
+DATA_FILE = BASE_DIR / "app" / "data" / "site_data.json"
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "cambia-esta-clave-secreta")
-app.config["DATABASE"] = str(DATABASE)
 
 BOOK_CATEGORIES = [
     "Interpretación de Elena White",
@@ -23,93 +22,58 @@ BOOK_CATEGORIES = [
 ]
 
 
-def get_db() -> sqlite3.Connection:
-    if "db" not in g:
-        g.db = sqlite3.connect(app.config["DATABASE"])
-        g.db.row_factory = sqlite3.Row
-    return g.db
+def now_iso() -> str:
+    return datetime.utcnow().isoformat(timespec="seconds")
 
 
-@app.teardown_appcontext
-def close_db(_exception: Exception | None) -> None:
-    db = g.pop("db", None)
-    if db is not None:
-        db.close()
-
-
-def init_db() -> None:
-    db = get_db()
-    db.executescript(
-        """
-        CREATE TABLE IF NOT EXISTS admins (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL
-        );
-
-        CREATE TABLE IF NOT EXISTS videos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            url TEXT NOT NULL,
-            description TEXT,
-            created_at TEXT NOT NULL
-        );
-
-        CREATE TABLE IF NOT EXISTS books (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            author TEXT,
-            category TEXT NOT NULL,
-            file_url TEXT NOT NULL,
-            description TEXT,
-            created_at TEXT NOT NULL
-        );
-
-        CREATE TABLE IF NOT EXISTS info_posts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            body TEXT NOT NULL,
-            event_date TEXT,
-            created_at TEXT NOT NULL
-        );
-
-        CREATE TABLE IF NOT EXISTS settings (
-            key TEXT PRIMARY KEY,
-            value TEXT NOT NULL
-        );
-
-        CREATE TABLE IF NOT EXISTS questionnaires (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            description TEXT,
-            form_url TEXT NOT NULL,
-            created_at TEXT NOT NULL
-        );
-        """
-    )
-    db.commit()
-
-    admin = db.execute("SELECT id FROM admins WHERE username = ?", ("admin",)).fetchone()
-    if admin is None:
-        db.execute("INSERT INTO admins (username, password) VALUES (?, ?)", ("admin", "admin123"))
-
-    defaults = {
-        "site_title": "Departamento de Educación Espíritu de Profecía",
-        "site_subtitle": "Misión Villaperla",
-        "about_text": (
-            "Somos el departamento de educación Espíritu de Profecía de la Misión Villaperla, "
-            "comprometidos en promover el estudio bíblico y el legado espiritual de Elena G. de White."
-        ),
-        "book_of_year_title": "El libro del año",
-        "book_of_year_description": "Aquí publicaremos el libro del año y recursos de estudio.",
-        "book_of_year_url": "",
+def default_data() -> dict:
+    return {
+        "admins": [
+            {"id": 1, "username": "admin", "password": "admin123"},
+        ],
+        "videos": [],
+        "books": [],
+        "info_posts": [],
+        "questionnaires": [],
+        "settings": {
+            "site_title": "Departamento de Educación Espíritu de Profecía",
+            "site_subtitle": "Misión Villaperla",
+            "about_text": (
+                "Somos el departamento de educación Espíritu de Profecía de la Misión Villaperla, "
+                "comprometidos en promover el estudio bíblico y el legado espiritual de Elena G. de White."
+            ),
+            "book_of_year_title": "El libro del año",
+            "book_of_year_description": "Aquí publicaremos el libro del año y recursos de estudio.",
+            "book_of_year_url": "",
+        },
+        "counters": {
+            "admins": 1,
+            "videos": 0,
+            "books": 0,
+            "info_posts": 0,
+            "questionnaires": 0,
+        },
     }
-    for key, value in defaults.items():
-        existing = db.execute("SELECT key FROM settings WHERE key = ?", (key,)).fetchone()
-        if existing is None:
-            db.execute("INSERT INTO settings (key, value) VALUES (?, ?)", (key, value))
 
-    db.commit()
+
+def ensure_data_file() -> None:
+    DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
+    if not DATA_FILE.exists():
+        DATA_FILE.write_text(json.dumps(default_data(), ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def load_data() -> dict:
+    ensure_data_file()
+    return json.loads(DATA_FILE.read_text(encoding="utf-8"))
+
+
+def save_data(data: dict) -> None:
+    DATA_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def next_id(data: dict, entity: str) -> int:
+    data["counters"][entity] = data["counters"].get(entity, 0) + 1
+    return data["counters"][entity]
 
 
 def login_required(view):
@@ -123,32 +87,34 @@ def login_required(view):
     return wrapped_view
 
 
-def now_iso() -> str:
-    return datetime.utcnow().isoformat(timespec="seconds")
-
-
-def get_settings() -> dict[str, str]:
-    db = get_db()
-    rows = db.execute("SELECT key, value FROM settings").fetchall()
-    return {row["key"]: row["value"] for row in rows}
+def stats_from_data(data: dict) -> dict[str, int]:
+    return {
+        "videos": len(data["videos"]),
+        "books": len(data["books"]),
+        "info_posts": len(data["info_posts"]),
+        "questionnaires": len(data["questionnaires"]),
+    }
 
 
 @app.route("/")
 def home():
-    db = get_db()
-    settings = get_settings()
-    videos = db.execute("SELECT * FROM videos ORDER BY id DESC LIMIT 6").fetchall()
-    info_posts = db.execute("SELECT * FROM info_posts ORDER BY event_date DESC, id DESC LIMIT 5").fetchall()
+    data = load_data()
+    videos = sorted(data["videos"], key=lambda x: x["id"], reverse=True)[:6]
+    info_posts = sorted(
+        data["info_posts"],
+        key=lambda x: (x.get("event_date") or "", x["id"]),
+        reverse=True,
+    )[:5]
     books_by_category = {}
     for category in BOOK_CATEGORIES:
-        books_by_category[category] = db.execute(
-            "SELECT * FROM books WHERE category = ? ORDER BY id DESC", (category,)
-        ).fetchall()
-    questionnaires = db.execute("SELECT * FROM questionnaires ORDER BY id DESC").fetchall()
+        books_by_category[category] = [
+            b for b in sorted(data["books"], key=lambda x: x["id"], reverse=True) if b["category"] == category
+        ]
+    questionnaires = sorted(data["questionnaires"], key=lambda x: x["id"], reverse=True)
 
     return render_template(
         "home.html",
-        settings=settings,
+        settings=data["settings"],
         videos=videos,
         info_posts=info_posts,
         books_by_category=books_by_category,
@@ -162,10 +128,8 @@ def admin_login():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "").strip()
-        db = get_db()
-        admin = db.execute(
-            "SELECT id FROM admins WHERE username = ? AND password = ?", (username, password)
-        ).fetchone()
+        data = load_data()
+        admin = next((a for a in data["admins"] if a["username"] == username and a["password"] == password), None)
         if admin:
             session.clear()
             session["admin_id"] = admin["id"]
@@ -188,20 +152,23 @@ def admin_logout():
 @app.route("/admin")
 @login_required
 def admin_dashboard():
-    db = get_db()
-    stats = {
-        "videos": db.execute("SELECT COUNT(*) as total FROM videos").fetchone()["total"],
-        "books": db.execute("SELECT COUNT(*) as total FROM books").fetchone()["total"],
-        "info_posts": db.execute("SELECT COUNT(*) as total FROM info_posts").fetchone()["total"],
-        "questionnaires": db.execute("SELECT COUNT(*) as total FROM questionnaires").fetchone()["total"],
-    }
-    return render_template("admin_dashboard.html", stats=stats, settings=get_settings(), categories=BOOK_CATEGORIES)
+    data = load_data()
+    return render_template(
+        "admin_dashboard.html",
+        stats=stats_from_data(data),
+        settings=data["settings"],
+        categories=BOOK_CATEGORIES,
+        videos=sorted(data["videos"], key=lambda x: x["id"], reverse=True),
+        books=sorted(data["books"], key=lambda x: x["id"], reverse=True),
+        info_posts=sorted(data["info_posts"], key=lambda x: x["id"], reverse=True),
+        questionnaires=sorted(data["questionnaires"], key=lambda x: x["id"], reverse=True),
+    )
 
 
 @app.route("/admin/settings", methods=["POST"])
 @login_required
 def admin_settings():
-    db = get_db()
+    data = load_data()
     fields = [
         "site_title",
         "site_subtitle",
@@ -211,9 +178,8 @@ def admin_settings():
         "book_of_year_url",
     ]
     for field in fields:
-        value = request.form.get(field, "").strip()
-        db.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", (field, value))
-    db.commit()
+        data["settings"][field] = request.form.get(field, "").strip()
+    save_data(data)
     flash("Configuración general actualizada.", "success")
     return redirect(url_for("admin_dashboard"))
 
@@ -228,12 +194,17 @@ def admin_videos_create():
         flash("Video: título y URL son obligatorios.", "danger")
         return redirect(url_for("admin_dashboard"))
 
-    db = get_db()
-    db.execute(
-        "INSERT INTO videos (title, url, description, created_at) VALUES (?, ?, ?, ?)",
-        (title, url, description, now_iso()),
+    data = load_data()
+    data["videos"].append(
+        {
+            "id": next_id(data, "videos"),
+            "title": title,
+            "url": url,
+            "description": description,
+            "created_at": now_iso(),
+        }
     )
-    db.commit()
+    save_data(data)
     flash("Video agregado correctamente.", "success")
     return redirect(url_for("admin_dashboard"))
 
@@ -241,9 +212,9 @@ def admin_videos_create():
 @app.route("/admin/videos/<int:item_id>/delete", methods=["POST"])
 @login_required
 def admin_videos_delete(item_id: int):
-    db = get_db()
-    db.execute("DELETE FROM videos WHERE id = ?", (item_id,))
-    db.commit()
+    data = load_data()
+    data["videos"] = [item for item in data["videos"] if item["id"] != item_id]
+    save_data(data)
     flash("Video eliminado.", "success")
     return redirect(url_for("admin_dashboard"))
 
@@ -260,12 +231,19 @@ def admin_books_create():
         flash("Libro: revisa los campos obligatorios.", "danger")
         return redirect(url_for("admin_dashboard"))
 
-    db = get_db()
-    db.execute(
-        "INSERT INTO books (title, author, category, file_url, description, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-        (title, author, category, file_url, description, now_iso()),
+    data = load_data()
+    data["books"].append(
+        {
+            "id": next_id(data, "books"),
+            "title": title,
+            "author": author,
+            "category": category,
+            "file_url": file_url,
+            "description": description,
+            "created_at": now_iso(),
+        }
     )
-    db.commit()
+    save_data(data)
     flash("Libro agregado correctamente.", "success")
     return redirect(url_for("admin_dashboard"))
 
@@ -273,9 +251,9 @@ def admin_books_create():
 @app.route("/admin/books/<int:item_id>/delete", methods=["POST"])
 @login_required
 def admin_books_delete(item_id: int):
-    db = get_db()
-    db.execute("DELETE FROM books WHERE id = ?", (item_id,))
-    db.commit()
+    data = load_data()
+    data["books"] = [item for item in data["books"] if item["id"] != item_id]
+    save_data(data)
     flash("Libro eliminado.", "success")
     return redirect(url_for("admin_dashboard"))
 
@@ -290,12 +268,17 @@ def admin_info_create():
         flash("Información: título y contenido son obligatorios.", "danger")
         return redirect(url_for("admin_dashboard"))
 
-    db = get_db()
-    db.execute(
-        "INSERT INTO info_posts (title, body, event_date, created_at) VALUES (?, ?, ?, ?)",
-        (title, body, event_date, now_iso()),
+    data = load_data()
+    data["info_posts"].append(
+        {
+            "id": next_id(data, "info_posts"),
+            "title": title,
+            "body": body,
+            "event_date": event_date,
+            "created_at": now_iso(),
+        }
     )
-    db.commit()
+    save_data(data)
     flash("Información publicada.", "success")
     return redirect(url_for("admin_dashboard"))
 
@@ -303,9 +286,9 @@ def admin_info_create():
 @app.route("/admin/info/<int:item_id>/delete", methods=["POST"])
 @login_required
 def admin_info_delete(item_id: int):
-    db = get_db()
-    db.execute("DELETE FROM info_posts WHERE id = ?", (item_id,))
-    db.commit()
+    data = load_data()
+    data["info_posts"] = [item for item in data["info_posts"] if item["id"] != item_id]
+    save_data(data)
     flash("Publicación eliminada.", "success")
     return redirect(url_for("admin_dashboard"))
 
@@ -320,12 +303,17 @@ def admin_questionnaire_create():
         flash("Cuestionario: título y enlace son obligatorios.", "danger")
         return redirect(url_for("admin_dashboard"))
 
-    db = get_db()
-    db.execute(
-        "INSERT INTO questionnaires (title, description, form_url, created_at) VALUES (?, ?, ?, ?)",
-        (title, description, form_url, now_iso()),
+    data = load_data()
+    data["questionnaires"].append(
+        {
+            "id": next_id(data, "questionnaires"),
+            "title": title,
+            "description": description,
+            "form_url": form_url,
+            "created_at": now_iso(),
+        }
     )
-    db.commit()
+    save_data(data)
     flash("Cuestionario agregado.", "success")
     return redirect(url_for("admin_dashboard"))
 
@@ -333,16 +321,14 @@ def admin_questionnaire_create():
 @app.route("/admin/questionnaires/<int:item_id>/delete", methods=["POST"])
 @login_required
 def admin_questionnaire_delete(item_id: int):
-    db = get_db()
-    db.execute("DELETE FROM questionnaires WHERE id = ?", (item_id,))
-    db.commit()
+    data = load_data()
+    data["questionnaires"] = [item for item in data["questionnaires"] if item["id"] != item_id]
+    save_data(data)
     flash("Cuestionario eliminado.", "success")
     return redirect(url_for("admin_dashboard"))
 
 
-with app.app_context():
-    init_db()
-
+ensure_data_file()
 
 if __name__ == "__main__":
     app.run(debug=True)
