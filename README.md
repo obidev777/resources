@@ -62,3 +62,8 @@ mkdir -p dist
 zip -r dist/departamento-espiritu-profecia.zip app app.py README.md requirements.txt .gitignore
 ```
 
+
+## Nota de compatibilidad de plantillas
+
+El proyecto usa `base.html` como plantilla base.
+También se incluye `base.htmk` como alias de compatibilidad para evitar errores `TemplateNotFound` si algún entorno o plantilla antigua referencia ese nombre por error tipográfico.
