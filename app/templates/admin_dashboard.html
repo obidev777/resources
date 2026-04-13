@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section container">
+  <h1>Administrador</h1>
+  <p>Gestiona todo el contenido del portal desde aquí.</p>
+
+  <div class="stats-grid">
+    <div class="stat"><strong>{{ stats.videos }}</strong><span>Videos</span></div>
+    <div class="stat"><strong>{{ stats.books }}</strong><span>Libros</span></div>
+    <div class="stat"><strong>{{ stats.info_posts }}</strong><span>Noticias</span></div>
+    <div class="stat"><strong>{{ stats.questionnaires }}</strong><span>Cuestionarios</span></div>
+  </div>
+
+  <div class="admin-grid">
+    <article class="card">
+      <h2>Configuración General</h2>
+      <form method="post" action="{{ url_for('admin_settings') }}">
+        <label>Título del sitio<input name="site_title" value="{{ settings.site_title }}" required></label>
+        <label>Subtítulo<input name="site_subtitle" value="{{ settings.site_subtitle }}" required></label>
+        <label>Nosotros<textarea name="about_text" rows="4" required>{{ settings.about_text }}</textarea></label>
+        <label>Título libro del año<input name="book_of_year_title" value="{{ settings.book_of_year_title }}" required></label>
+        <label>Descripción libro del año<textarea name="book_of_year_description" rows="3">{{ settings.book_of_year_description }}</textarea></label>
+        <label>URL libro del año<input name="book_of_year_url" value="{{ settings.book_of_year_url }}"></label>
+        <button class="btn" type="submit">Guardar configuración</button>
+      </form>
+    </article>
+
+    <article class="card">
+      <h2>Agregar Video</h2>
+      <form method="post" action="{{ url_for('admin_videos_create') }}">
+        <label>Título<input name="title" required></label>
+        <label>URL del video<input name="url" required></label>
+        <label>Descripción<textarea name="description" rows="3"></textarea></label>
+        <button class="btn" type="submit">Guardar video</button>
+      </form>
+    </article>
+
+    <article class="card">
+      <h2>Agregar Libro</h2>
+      <form method="post" action="{{ url_for('admin_books_create') }}">
+        <label>Título<input name="title" required></label>
+        <label>Autor<input name="author"></label>
+        <label>Categoría
+          <select name="category" required>
+            {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select>
+        </label>
+        <label>URL archivo<input name="file_url" required></label>
+        <label>Descripción<textarea name="description" rows="3"></textarea></label>
+        <button class="btn" type="submit">Guardar libro</button>
+      </form>
+    </article>
+
+    <article class="card">
+      <h2>Agregar Información</h2>
+      <form method="post" action="{{ url_for('admin_info_create') }}">
+        <label>Título<input name="title" required></label>
+        <label>Fecha del evento<input type="date" name="event_date"></label>
+        <label>Contenido<textarea name="body" rows="4" required></textarea></label>
+        <button class="btn" type="submit">Publicar información</button>
+      </form>
+    </article>
+
+    <article class="card">
+      <h2>Agregar Cuestionario</h2>
+      <form method="post" action="{{ url_for('admin_questionnaire_create') }}">
+        <label>Título<input name="title" required></label>
+        <label>Descripción<textarea name="description" rows="3"></textarea></label>
+        <label>URL del formulario<input name="form_url" required></label>
+        <button class="btn" type="submit">Guardar cuestionario</button>
+      </form>
+    </article>
+  </div>
+
+  <div class="admin-grid">
+    <article class="card">
+      <h2>Eliminar videos</h2>
+      {% for item in videos %}
+      <form class="inline" method="post" action="{{ url_for('admin_videos_delete', item_id=item.id) }}">
+        <span>{{ item.title }}</span><button class="btn danger" type="submit">Eliminar</button>
+      </form>
+      {% else %}<p class="muted">Sin videos.</p>{% endfor %}
+    </article>
+
+    <article class="card">
+      <h2>Eliminar libros</h2>
+      {% for item in books %}
+      <form class="inline" method="post" action="{{ url_for('admin_books_delete', item_id=item.id) }}">
+        <span>{{ item.title }}</span><button class="btn danger" type="submit">Eliminar</button>
+      </form>
+      {% else %}<p class="muted">Sin libros.</p>{% endfor %}
+    </article>
+
+    <article class="card">
+      <h2>Eliminar información</h2>
+      {% for item in info_posts %}
+      <form class="inline" method="post" action="{{ url_for('admin_info_delete', item_id=item.id) }}">
+        <span>{{ item.title }}</span><button class="btn danger" type="submit">Eliminar</button>
+      </form>
+      {% else %}<p class="muted">Sin publicaciones.</p>{% endfor %}
+    </article>
+
+    <article class="card">
+      <h2>Eliminar cuestionarios</h2>
+      {% for item in questionnaires %}
+      <form class="inline" method="post" action="{{ url_for('admin_questionnaire_delete', item_id=item.id) }}">
+        <span>{{ item.title }}</span><button class="btn danger" type="submit">Eliminar</button>
+      </form>
+      {% else %}<p class="muted">Sin cuestionarios.</p>{% endfor %}
+    </article>
+  </div>
+</section>
+{% endblock %}

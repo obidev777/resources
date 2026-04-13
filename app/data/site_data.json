@@ -1,0 +1,28 @@
+{
+  "admins": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password": "admin123"
+    }
+  ],
+  "videos": [],
+  "books": [],
+  "info_posts": [],
+  "questionnaires": [],
+  "settings": {
+    "site_title": "Departamento de Educación Espíritu de Profecía",
+    "site_subtitle": "Misión Villaperla",
+    "about_text": "Somos el departamento de educación Espíritu de Profecía de la Misión Villaperla, comprometidos en promover el estudio bíblico y el legado espiritual de Elena G. de White.",
+    "book_of_year_title": "El libro del año",
+    "book_of_year_description": "Aquí publicaremos el libro del año y recursos de estudio.",
+    "book_of_year_url": ""
+  },
+  "counters": {
+    "admins": 1,
+    "videos": 0,
+    "books": 0,
+    "info_posts": 0,
+    "questionnaires": 0
+  }
+}
