@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+    <Nullable>disable</Nullable>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <AssemblyName>flowUI</AssemblyName>
+    <RootNamespace>FlowUI</RootNamespace>
+    <Description>FlowUI responsive C# UI library that renders HTML, supports real-time updates, HTTP hosting and canvas 2D scenes.</Description>
+  </PropertyGroup>
+</Project>
