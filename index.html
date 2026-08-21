@@ -6,36 +6,52 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="screen-orientation" content="landscape" />
-  <title>Shinobi Clash: Duelo Senki</title>
+  <title>Obisoftdev Shinobi Senki X</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <main id="app">
-    <canvas id="game" aria-label="Juego de batalla ninja para móvil" role="application"></canvas>
+    <canvas id="game" aria-label="Shinobi Senki X, juego mobile de batalla ninja" role="application"></canvas>
+
+    <section id="intro" class="intro" aria-live="polite">
+      <div class="seal"></div>
+      <p class="studio">OBISOFTDEV PRESENTA</p>
+      <h1>SHINOBI SENKI X</h1>
+      <p class="tagline">batalla ninja moderna · dos guerreros · arena dinámica · técnicas cinematográficas</p>
+    </section>
+
     <div id="rotateHint">
       <div class="phone">↻</div>
-      <h1>Gira tu móvil</h1>
-      <p>Este duelo está diseñado para jugarse en pantalla completa horizontal.</p>
+      <h2>Gira tu móvil</h2>
+      <p>Diseñado para landscape fullscreen con controles táctiles.</p>
     </div>
+
     <section id="menu" class="panel">
-      <h1>Shinobi Clash</h1>
-      <p>Duelo 1 vs 1 inspirado en batallas ninja tipo senki. Personajes originales, combos, chakra, sustitución y técnicas especiales.</p>
-      <button id="playBtn">Jugar fullscreen</button>
+      <h1>Shinobi Senki X</h1>
+      <p>Duelo 1 vs 1 estilo senki, con personajes originales, combos aéreos, sustitución, chakra, invocación, ultimate y escenarios con profundidad.</p>
+      <div class="cards">
+        <article><b>RYU KAZE</b><span>Viento relámpago · veloz · combos</span></article>
+        <article><b>KAI TSUKI</b><span>Luna oscura · IA táctica · contraataques</span></article>
+      </div>
+      <button id="playBtn">Entrar en fullscreen</button>
       <button id="howBtn" class="ghost">Controles</button>
       <div id="how" hidden>
-        <b>Mobile:</b> joystick izquierdo para mover/saltar, botones derechos para ataque, shuriken, dash, skill y ultimate.<br />
-        <b>Teclado:</b> WASD/Flechas, J ataque, K shuriken, L dash, U skill, I ultimate, P pausa.
+        <b>Móvil:</b> joystick para mover/saltar/agacharse. Botones: ATK, ★, DASH, SKILL, SUMMON y ULT.<br />
+        <b>Teclado:</b> WASD/Flechas, J ataque, K shuriken, L dash/sustitución, U skill, O summon, I ultimate, P pausa.
       </div>
     </section>
+
     <div id="hud">
-      <div class="barbox left"><span>RYU</span><div class="hp"><i id="p1hp"></i></div><div class="chakra"><i id="p1ch"></i></div></div>
+      <div class="barbox left"><span>RYU KAZE</span><div class="hp"><i id="p1hp"></i></div><div class="chakra"><i id="p1ch"></i></div></div>
       <div class="timer" id="timer">99</div>
-      <div class="barbox right"><span>KAI</span><div class="hp"><i id="p2hp"></i></div><div class="chakra"><i id="p2ch"></i></div></div>
+      <div class="barbox right"><span>KAI TSUKI</span><div class="hp"><i id="p2hp"></i></div><div class="chakra"><i id="p2ch"></i></div></div>
     </div>
+
     <div id="controls">
       <div id="stick" class="stick"><i></i></div>
       <div class="buttons">
         <button data-act="ultimate" class="ultimate">ULT</button>
+        <button data-act="summon" class="summon">SUM</button>
         <button data-act="skill" class="skill">SKILL</button>
         <button data-act="dash">DASH</button>
         <button data-act="ranged">★</button>
