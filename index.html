@@ -5,61 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="screen-orientation" content="landscape" />
   <title>Obisoftdev Shinobi Senki X</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main id="app">
-    <canvas id="game" aria-label="Shinobi Senki X, juego mobile de batalla ninja" role="application"></canvas>
-
-    <section id="intro" class="intro" aria-live="polite">
-      <div class="seal"></div>
-      <p class="studio">OBISOFTDEV PRESENTA</p>
-      <h1>SHINOBI SENKI X</h1>
-      <p class="tagline">batalla ninja moderna · dos guerreros · arena dinámica · técnicas cinematográficas</p>
-    </section>
-
-    <div id="rotateHint">
-      <div class="phone">↻</div>
-      <h2>Gira tu móvil</h2>
-      <p>Diseñado para landscape fullscreen con controles táctiles.</p>
-    </div>
-
-    <section id="menu" class="panel">
-      <h1>Shinobi Senki X</h1>
-      <p>Batalla estilo senki en carril: héroes originales, bots aliados/enemigos, torres destructibles, combos aéreos, sustitución, chakra, invocación, ultimate y escenario con profundidad.</p>
-      <div class="cards">
-        <article><b>RYU KAZE</b><span>Viento relámpago · veloz · combos</span></article>
-        <article><b>KAI TSUKI</b><span>Luna oscura · IA táctica · contraataques</span></article>
-      </div>
-      <button id="playBtn">Entrar en fullscreen</button>
-      <button id="howBtn" class="ghost">Controles</button>
-      <div id="how" hidden>
-        <b>Móvil:</b> joystick para mover/saltar/agacharse. Botones: ATK, ★, DASH, SKILL, SUMMON y ULT.<br />
-        <b>Teclado:</b> WASD/Flechas, J ataque, K shuriken, L dash/sustitución, U skill, O summon, I ultimate, P pausa.
-      </div>
-    </section>
-
-    <div id="hud">
-      <div class="barbox left"><span>RYU KAZE</span><div class="hp"><i id="p1hp"></i></div><div class="chakra"><i id="p1ch"></i></div></div>
-      <div class="timer" id="timer">99</div>
-      <div class="barbox right"><span>KAI TSUKI</span><div class="hp"><i id="p2hp"></i></div><div class="chakra"><i id="p2ch"></i></div></div>
-    </div>
-
-    <div id="controls">
-      <div id="stick" class="stick"><i></i></div>
-      <div class="buttons">
-        <button data-act="ultimate" class="ultimate">ULT</button>
-        <button data-act="summon" class="summon">SUM</button>
-        <button data-act="skill" class="skill">SKILL</button>
-        <button data-act="dash">DASH</button>
-        <button data-act="ranged">★</button>
-        <button data-act="attack" class="attack">ATK</button>
-      </div>
-    </div>
-    <div id="toast"></div>
-  </main>
+  <canvas id="game" aria-label="Shinobi Senki X canvas fullscreen" role="application"></canvas>
   <script type="module" src="scripts/game.js"></script>
 </body>
 </html>
