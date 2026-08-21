@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="screen-orientation" content="landscape" />
+  <title>Shinobi Clash: Duelo Senki</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main id="app">
+    <canvas id="game" aria-label="Juego de batalla ninja para móvil" role="application"></canvas>
+    <div id="rotateHint">
+      <div class="phone">↻</div>
+      <h1>Gira tu móvil</h1>
+      <p>Este duelo está diseñado para jugarse en pantalla completa horizontal.</p>
+    </div>
+    <section id="menu" class="panel">
+      <h1>Shinobi Clash</h1>
+      <p>Duelo 1 vs 1 inspirado en batallas ninja tipo senki. Personajes originales, combos, chakra, sustitución y técnicas especiales.</p>
+      <button id="playBtn">Jugar fullscreen</button>
+      <button id="howBtn" class="ghost">Controles</button>
+      <div id="how" hidden>
+        <b>Mobile:</b> joystick izquierdo para mover/saltar, botones derechos para ataque, shuriken, dash, skill y ultimate.<br />
+        <b>Teclado:</b> WASD/Flechas, J ataque, K shuriken, L dash, U skill, I ultimate, P pausa.
+      </div>
+    </section>
+    <div id="hud">
+      <div class="barbox left"><span>RYU</span><div class="hp"><i id="p1hp"></i></div><div class="chakra"><i id="p1ch"></i></div></div>
+      <div class="timer" id="timer">99</div>
+      <div class="barbox right"><span>KAI</span><div class="hp"><i id="p2hp"></i></div><div class="chakra"><i id="p2ch"></i></div></div>
+    </div>
+    <div id="controls">
+      <div id="stick" class="stick"><i></i></div>
+      <div class="buttons">
+        <button data-act="ultimate" class="ultimate">ULT</button>
+        <button data-act="skill" class="skill">SKILL</button>
+        <button data-act="dash">DASH</button>
+        <button data-act="ranged">★</button>
+        <button data-act="attack" class="attack">ATK</button>
+      </div>
+    </div>
+    <div id="toast"></div>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
